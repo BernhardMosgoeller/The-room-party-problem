@@ -5,6 +5,7 @@
 #include <pthread.h>    //für Threads
 #include <semaphore.h>  //für Threads
 #include <string.h>     //für String Befehle (puts)
+ 
 
 sem_t sem_mos;  //semaphore wird als Mutex benutzt
 int number_of_students=0;   //gibt die Zahl der Studenten an im Raum Dean wird nicht mitgezählt
@@ -12,7 +13,8 @@ int dean_in_room=0;     //Zeigt an ob der Dean im Raum ist oder nicht
 int party_over=0;       //Zeigt an wann der Party vorbei ist also Keine Studenten sind da
 
 void *student(void *arg) {
-	if(dean_in_room==0) //schaut ob Dean im Raum ist
+
+    if(dean_in_room==0) //schaut ob Dean im Raum ist
     {
         int x=10,y=200,random;  //Variablen für Zufallszahl
 
@@ -43,18 +45,54 @@ void *student(void *arg) {
 }
 
 void *dean(void *arg) {
-	puts("Hier ist der DEAN");
+    puts("Dean Start");
+    if(number_of_students==0||number_of_students>=50)   //Dean darf nur in den Raum wenn mehr als 50 Studentne im Raum sind oder 0
+    {
+        dean_in_room=1; //Setzt Flag,damit keine neue Studenten mehr kommen
+        puts("Party Crash, keine neue Studenten dürfen kommen");
+        puts("Warten bis keine Studenten mehr im Raum sind");
+        while(number_of_students!=0)    //Wartet bis alle Studenten den Raum verlassen haben 
+            sleep(1);
+        puts("Keine Studenten mehr im Raum\n");
+        party_over=1;   // Flag damit Studenten weiter probieren zu kommen, gibt Meldung aus
+    }
+    else   
+        puts("Nicht erlaubt, die Party zum Crashen");
+
+    puts("");//Leerzeile
 }
+
 
 int main()
 {
-	pthread_t tid0,tid1;
 
-	pthread_create(&tid1, NULL, dean, NULL);        //Started Dean Thread
-	pthread_create(&tid0, NULL, student, NULL);     //Startet Student Thread
+    /*random Zahl bestimmt ob der Dean kommt oder nicht*/
+    int x = 1, y = 10;
+    int random;
+    int i;
+    pthread_t tid0,tid1;
 
-	pthread_join(tid0, NULL);
-	pthread_join(tid1, NULL);
+    sem_init(&sem_mos, 0, 1);  //Initalisiert Semaphore 
 
-	return 0;
+    srand (time (NULL));    //Zufallsgenerator initialisieren
+    while(party_over!=1)
+    {
+        random = (rand () % ((y + 1) - x)) + x;     //bekommt zufällige zahl
+        //printf("Zufallszahl %d\n",random);
+
+        if(random==8)
+        {
+            if(dean_in_room==0)//es gibt keine 2 Deans
+            pthread_create(&tid1, NULL, dean, NULL);        //Started Dean Thread
+        }
+        else
+        {
+            pthread_create(&tid0, NULL, student, NULL);     //Startet Student Thread
+        }
+        sleep(1);
+    }
+    pthread_join(tid1, NULL);//  Zeile unnätig weil die While Schleife aufhört sobald der Dean fertig ist, und Dean hört erst auf wenn kein Student mehr im Raum ist
+
+  return 0;
 }
+
