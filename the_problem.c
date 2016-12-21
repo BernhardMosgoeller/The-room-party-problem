@@ -20,9 +20,10 @@ void *student(void *arg) {
 
         sem_wait(&sem_mos);    //down semaphore, Kritische Zone wird betreten
         number_of_students++;   //Zahl der Studenten im Raum wird um 1 erhöht
-        printf("Kritisches Zone Zahl der Studenten im Raum: \t%d\n",number_of_students);    //gibt die neue Anzahl an
+        printf("*Student hat den Raum betreten*\n");
+        printf("Zahl der Studenten im Raum: \t%d\n\n",number_of_students);    //gibt die neue Anzahl an
         sem_post(&sem_mos);   //up semaphore, Kritische Zone wird verlassen
-        printf("*Student hat den Raum betreten*\n\n");
+        
 
         //srand (time (NULL));    //Zufallsgenerator initialisieren NICHT ansonsten bei jedem thread selbe zahl
         random = (rand () % ((y + 1) - x)) + x;     //bekommt zufällige zahl zwischen x und y
@@ -32,9 +33,10 @@ void *student(void *arg) {
 
         sem_wait(&sem_mos); //down semaphore, Kritische Zone wird betreten
          number_of_students--; //Zahl der Studenten im Raum wird um 1 verringert
-        printf("Kritisches Zone, Zahl der Studenten im Raum: \t%d\n",number_of_students);   //gibt die neue Anzahl an
+         printf("*Student hat den Raum verlassen*\n");
+        printf("Zahl der Studenten im Raum: \t%d\n\n",number_of_students);   //gibt die neue Anzahl an
         sem_post(&sem_mos);   //up semaphore
-        printf("*Student hat den Raum verlassen*\n\n");
+        
     }
     else
     {
@@ -50,14 +52,14 @@ void *dean(void *arg) {
     {
         dean_in_room=1; //Setzt Flag,damit keine neue Studenten mehr kommen
         puts("Party Crash, keine neue Studenten dürfen kommen");
-        puts("Warten bis keine Studenten mehr im Raum sind");
+        puts("Warten bis keine Studenten mehr im Raum sind\n");
         while(number_of_students!=0)    //Wartet bis alle Studenten den Raum verlassen haben 
             sleep(1);
         puts("Keine Studenten mehr im Raum\n");
         party_over=1;   // Flag damit Studenten weiter probieren zu kommen, gibt Meldung aus
     }
     else   
-        puts("Nicht erlaubt, die Party zum Crashen");
+        puts("Nicht erlaubt, die Party zum Crashen\n");
 
     puts("");//Leerzeile
 }
